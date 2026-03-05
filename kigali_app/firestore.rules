@@ -1,0 +1,30 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Users collection - each user can only read/write their own profile
+    match /users/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+
+    // Listings collection
+    match /listings/{listingId} {
+      // Anyone authenticated can read listings
+      allow read: if request.auth != null;
+
+      // Anyone authenticated can create a listing (must set their own UID)
+      allow create: if request.auth != null
+        && request.auth.uid == request.resource.data.createdBy
+        && request.resource.data.name is string
+        && request.resource.data.name.size() > 0
+        && request.resource.data.category is string
+        && request.resource.data.latitude is number
+        && request.resource.data.longitude is number;
+
+      // Only the creator can update or delete
+      allow update, delete: if request.auth != null
+        && request.auth.uid == resource.data.createdBy;
+    }
+  }
+}
