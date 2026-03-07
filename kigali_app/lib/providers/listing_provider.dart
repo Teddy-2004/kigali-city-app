@@ -35,7 +35,8 @@ class ListingProvider extends ChangeNotifier {
     }
     if (_searchQuery.isNotEmpty) {
       result = result
-          .where((l) => l.name.toLowerCase().contains(_searchQuery.toLowerCase()))
+          .where((l) =>
+              l.name.toLowerCase().contains(_searchQuery.toLowerCase()))
           .toList();
     }
     return result;
@@ -61,10 +62,13 @@ class ListingProvider extends ChangeNotifier {
   }
 
   void startListeningUserListings(String uid) {
+    // Cancel old subscription and clear old data immediately
+    // so the previous user's listings never appear for the new user
+    _userListingsSubscription?.cancel();
+    _userListings = [];
     _userListingStatus = ListingStatus.loading;
     notifyListeners();
 
-    _userListingsSubscription?.cancel();
     _userListingsSubscription = _service.getUserListings(uid).listen(
       (listings) {
         _userListings = listings;
@@ -79,9 +83,22 @@ class ListingProvider extends ChangeNotifier {
     );
   }
 
-  void stopListening() {
+  /// Call this on sign-out to wipe all state so the next user starts clean.
+  void reset() {
     _allListingsSubscription?.cancel();
     _userListingsSubscription?.cancel();
+    _allListingsSubscription = null;
+    _userListingsSubscription = null;
+
+    _allListings = [];
+    _userListings = [];
+    _status = ListingStatus.initial;
+    _userListingStatus = ListingStatus.initial;
+    _errorMessage = null;
+    _searchQuery = '';
+    _selectedCategory = null;
+
+    notifyListeners();
   }
 
   void setSearchQuery(String query) {
@@ -135,7 +152,8 @@ class ListingProvider extends ChangeNotifier {
 
   @override
   void dispose() {
-    stopListening();
+    _allListingsSubscription?.cancel();
+    _userListingsSubscription?.cancel();
     super.dispose();
   }
 }

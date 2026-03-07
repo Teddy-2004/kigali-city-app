@@ -121,7 +121,7 @@ class _MyListingsScreenState extends State<MyListingsScreen> {
                     width: 44,
                     height: 44,
                     decoration: BoxDecoration(
-                      color: AppColors.surfaceLight,
+                      color: AppColors.surfaceHigh,
                       borderRadius: BorderRadius.circular(10),
                     ),
                     child: Icon(_categoryIcon(listing.category), color: AppColors.primary, size: 22),
@@ -149,7 +149,7 @@ class _MyListingsScreenState extends State<MyListingsScreen> {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       IconButton(
-                        icon: const Icon(Icons.edit_outlined, color: AppColors.accent),
+                        icon: const Icon(Icons.edit_outlined, color: AppColors.secondary),
                         onPressed: () => Navigator.push(
                           context,
                           MaterialPageRoute(

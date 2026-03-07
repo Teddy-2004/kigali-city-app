@@ -22,10 +22,15 @@ class KigaliApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Create both providers manually so we can cross-wire them
+    final listingProvider = ListingProvider();
+    final authProvider = ap.AuthProvider()
+      ..setListingProvider(listingProvider);
+
     return MultiProvider(
       providers: [
-        ChangeNotifierProvider(create: (_) => ap.AuthProvider()),
-        ChangeNotifierProvider(create: (_) => ListingProvider()),
+        ChangeNotifierProvider<ap.AuthProvider>.value(value: authProvider),
+        ChangeNotifierProvider<ListingProvider>.value(value: listingProvider),
       ],
       child: MaterialApp(
         title: 'Kigali City Directory',

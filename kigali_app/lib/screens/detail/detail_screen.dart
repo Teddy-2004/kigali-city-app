@@ -163,7 +163,7 @@ class _DetailScreenState extends State<DetailScreen> {
                         icon: Icons.phone_outlined,
                         label: 'Contact',
                         value: l.contactNumber,
-                        valueColor: AppColors.accent,
+                        valueColor: AppColors.secondary,
                       ),
                     ),
                   _InfoRow(
@@ -208,10 +208,10 @@ class _DetailScreenState extends State<DetailScreen> {
                       width: double.infinity,
                       child: OutlinedButton.icon(
                         onPressed: _callPhone,
-                        icon: const Icon(Icons.phone, color: AppColors.accent),
-                        label: const Text('Call', style: TextStyle(color: AppColors.accent)),
+                        icon: const Icon(Icons.phone, color: AppColors.secondary),
+                        label: const Text('Call', style: TextStyle(color: AppColors.secondary)),
                         style: OutlinedButton.styleFrom(
-                          side: const BorderSide(color: AppColors.accent),
+                          side: const BorderSide(color: AppColors.secondary),
                           padding: const EdgeInsets.symmetric(vertical: 14),
                         ),
                       ),

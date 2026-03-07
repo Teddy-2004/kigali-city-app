@@ -13,7 +13,6 @@ class VerifyEmailScreen extends StatefulWidget {
 
 class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
   Timer? _timer;
-  bool _emailSent = true;
 
   @override
   void initState() {
@@ -22,7 +21,10 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
   }
 
   void _startPolling() {
+    // Poll every 3 seconds — calls reload() on the Firebase user,
+    // then notifyListeners() if verified. The Consumer below will rebuild.
     _timer = Timer.periodic(const Duration(seconds: 3), (_) async {
+      if (!mounted) return;
       await context.read<ap.AuthProvider>().checkEmailVerification();
     });
   }
@@ -35,90 +37,112 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final auth = context.read<ap.AuthProvider>();
+    // Use watch (not read) so this widget rebuilds when AuthProvider notifies.
+    // When checkEmailVerification sets status = authenticated, the AuthGate
+    // in main.dart will swap to HomeScreen automatically.
+    final auth = context.watch<ap.AuthProvider>();
+    final email = auth.user?.email ?? 'your email';
+
     return Scaffold(
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.all(24),
+          padding: const EdgeInsets.symmetric(horizontal: 24),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Container(
-                width: 80,
-                height: 80,
-                decoration: BoxDecoration(
-                  color: AppColors.primary.withOpacity(0.2),
-                  shape: BoxShape.circle,
+              // ── Icon ──────────────────────────────────────────────
+              Center(
+                child: Container(
+                  width: 80,
+                  height: 80,
+                  decoration: BoxDecoration(
+                    color: AppColors.primary.withOpacity(0.1),
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                        color: AppColors.primary.withOpacity(0.3), width: 1.5),
+                  ),
+                  child: const Icon(Icons.mark_email_unread_rounded,
+                      color: AppColors.primary, size: 38),
                 ),
-                child: const Icon(Icons.email_outlined, color: AppColors.primary, size: 40),
               ),
-              const SizedBox(height: 32),
+              const SizedBox(height: 28),
+
+              // ── Title ─────────────────────────────────────────────
               const Text(
-                'Verify Your Email',
+                'Check your inbox',
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   color: AppColors.textPrimary,
                   fontSize: 24,
-                  fontWeight: FontWeight.bold,
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: -0.4,
                 ),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 10),
               Text(
-                'We sent a verification link to\n${auth.user?.email ?? "your email"}',
+                'We sent a verification link to\n$email',
                 textAlign: TextAlign.center,
-                style: const TextStyle(color: AppColors.textSecondary, fontSize: 16),
+                style: const TextStyle(
+                    color: AppColors.textSecondary, fontSize: 15, height: 1.5),
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 8),
               const Text(
-                'Please check your inbox and click the link to verify your account. This page will update automatically.',
+                'Click the link in the email, then return here — this page will update automatically.',
                 textAlign: TextAlign.center,
-                style: TextStyle(color: AppColors.textMuted, fontSize: 14),
+                style: TextStyle(
+                    color: AppColors.textMuted, fontSize: 13, height: 1.5),
               ),
+
               const SizedBox(height: 40),
-              const CircularProgressIndicator(color: AppColors.primary),
-              const SizedBox(height: 16),
-              const Text(
-                'Waiting for verification...',
-                textAlign: TextAlign.center,
-                style: TextStyle(color: AppColors.textMuted),
+
+              // ── Polling indicator ─────────────────────────────────
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  SizedBox(
+                    width: 16,
+                    height: 16,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: AppColors.primary.withOpacity(0.6),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  const Text(
+                    'Waiting for verification…',
+                    style: TextStyle(
+                        color: AppColors.textMuted,
+                        fontSize: 13),
+                  ),
+                ],
               ),
+
               const SizedBox(height: 40),
-              if (_emailSent)
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: AppColors.success.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: const Text(
-                    'Verification email sent! Check your spam folder if not received.',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(color: AppColors.success, fontSize: 13),
-                  ),
-                ),
-              const SizedBox(height: 16),
-              OutlinedButton(
+
+              // ── Resend ────────────────────────────────────────────
+              OutlinedButton.icon(
                 onPressed: () async {
                   await context.read<ap.AuthProvider>().resendVerificationEmail();
-                  setState(() => _emailSent = true);
-                  if (mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Verification email resent!')),
-                    );
-                  }
+                  if (!mounted) return;
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Verification email resent!'),
+                    ),
+                  );
                 },
-                style: OutlinedButton.styleFrom(
-                  side: const BorderSide(color: AppColors.primary),
-                  foregroundColor: AppColors.primary,
-                ),
-                child: const Text('Resend Email'),
+                icon: const Icon(Icons.send_rounded, size: 16),
+                label: const Text('Resend verification email'),
               ),
+              const SizedBox(height: 12),
+
+              // ── Back to login ─────────────────────────────────────
               TextButton(
-                onPressed: () async {
-                  await context.read<ap.AuthProvider>().signOut();
-                },
-                child: const Text('Back to Login', style: TextStyle(color: AppColors.textSecondary)),
+                onPressed: () => context.read<ap.AuthProvider>().signOut(),
+                child: const Text(
+                  'Back to Login',
+                  style: TextStyle(color: AppColors.textSecondary),
+                ),
               ),
             ],
           ),

@@ -9,69 +9,98 @@ class SettingsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Settings')),
-      body: Consumer<ap.AuthProvider>(
-        builder: (_, auth, __) {
-          final profile = auth.userProfile;
-          return SingleChildScrollView(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+      body: SafeArea(
+        child: Consumer<ap.AuthProvider>(
+          builder: (_, auth, __) {
+            final profile = auth.userProfile;
+            final name = profile?.displayName ?? 'User';
+            final email = auth.user?.email ?? '';
+            final initials = name
+                .split(' ')
+                .take(2)
+                .map((s) => s.isNotEmpty ? s[0].toUpperCase() : '')
+                .join();
+
+            return ListView(
+              padding: const EdgeInsets.all(20),
               children: [
-                // Profile card
+                // Page title
+                const Text(
+                  'Settings',
+                  style: TextStyle(
+                    color: AppColors.textPrimary,
+                    fontSize: 28,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: -0.6,
+                  ),
+                ),
+                const SizedBox(height: 24),
+
+                // ── Profile card ──────────────────────────────────────
                 Container(
-                  padding: const EdgeInsets.all(20),
+                  padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
                     color: AppColors.surface,
                     borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: AppColors.surfaceBorder),
                   ),
                   child: Row(
                     children: [
-                      CircleAvatar(
-                        radius: 32,
-                        backgroundColor: AppColors.primary,
+                      Container(
+                        width: 56,
+                        height: 56,
+                        decoration: BoxDecoration(
+                          color: AppColors.primary.withOpacity(0.12),
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(
+                              color: AppColors.primary.withOpacity(0.25)),
+                        ),
+                        alignment: Alignment.center,
                         child: Text(
-                          (profile?.displayName ?? auth.user?.email ?? 'U')
-                              .substring(0, 1)
-                              .toUpperCase(),
+                          initials,
                           style: const TextStyle(
-                            color: AppColors.background,
-                            fontSize: 24,
-                            fontWeight: FontWeight.bold,
+                            color: AppColors.primary,
+                            fontSize: 20,
+                            fontWeight: FontWeight.w800,
                           ),
                         ),
                       ),
-                      const SizedBox(width: 16),
+                      const SizedBox(width: 14),
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              profile?.displayName ?? 'User',
+                              name,
                               style: const TextStyle(
                                 color: AppColors.textPrimary,
-                                fontSize: 18,
-                                fontWeight: FontWeight.w600,
+                                fontSize: 16,
+                                fontWeight: FontWeight.w700,
                               ),
                             ),
-                            const SizedBox(height: 4),
+                            const SizedBox(height: 3),
                             Text(
-                              profile?.email ?? auth.user?.email ?? '',
-                              style: const TextStyle(color: AppColors.textSecondary, fontSize: 13),
-                            ),
-                            const SizedBox(height: 4),
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                              decoration: BoxDecoration(
-                                color: AppColors.success.withOpacity(0.15),
-                                borderRadius: BorderRadius.circular(6),
-                              ),
-                              child: const Text(
-                                'Email Verified',
-                                style: TextStyle(color: AppColors.success, fontSize: 11),
-                              ),
+                              email,
+                              style: const TextStyle(
+                                  color: AppColors.textSecondary,
+                                  fontSize: 13),
                             ),
                           ],
+                        ),
+                      ),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 10, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: AppColors.success.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: const Text(
+                          'Verified',
+                          style: TextStyle(
+                              color: AppColors.success,
+                              fontSize: 11,
+                              fontWeight: FontWeight.w700),
                         ),
                       ),
                     ],
@@ -79,192 +108,123 @@ class SettingsScreen extends StatelessWidget {
                 ),
 
                 const SizedBox(height: 24),
-                const Text(
-                  'Preferences',
-                  style: TextStyle(
-                    color: AppColors.textSecondary,
-                    fontSize: 13,
-                    fontWeight: FontWeight.w600,
-                    letterSpacing: 0.8,
-                  ),
-                ),
-                const SizedBox(height: 8),
 
-                // Notifications toggle
-                Container(
-                  decoration: BoxDecoration(
-                    color: AppColors.surface,
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: SwitchListTile(
-                    value: profile?.notificationsEnabled ?? true,
-                    onChanged: (v) => auth.updateNotifications(v),
-                    title: const Text(
-                      'Location Notifications',
-                      style: TextStyle(color: AppColors.textPrimary),
-                    ),
-                    subtitle: const Text(
-                      'Get notified about services near you',
-                      style: TextStyle(color: AppColors.textSecondary, fontSize: 12),
-                    ),
-                    secondary: Container(
-                      width: 40,
-                      height: 40,
-                      decoration: BoxDecoration(
-                        color: AppColors.surfaceLight,
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: const Icon(Icons.notifications_outlined, color: AppColors.primary, size: 20),
-                    ),
-                    activeThumbColor: AppColors.primary,
+                // ── Preferences ───────────────────────────────────────
+                _sectionLabel('Preferences'),
+                const SizedBox(height: 10),
+                _settingsTile(
+                  icon: Icons.notifications_outlined,
+                  iconColor: AppColors.secondary,
+                  title: 'Notifications',
+                  subtitle: 'Alerts for new places nearby',
+                  trailing: Switch(
+                    value: profile?.notificationsEnabled ?? false,
+                    onChanged: (_) {},
+                    activeColor: AppColors.primary,
+                    inactiveTrackColor: AppColors.surfaceBorder,
+                    inactiveThumbColor: AppColors.textMuted,
                   ),
                 ),
 
                 const SizedBox(height: 24),
-                const Text(
-                  'Account',
-                  style: TextStyle(
-                    color: AppColors.textSecondary,
-                    fontSize: 13,
-                    fontWeight: FontWeight.w600,
-                    letterSpacing: 0.8,
-                  ),
+
+                // ── Account ───────────────────────────────────────────
+                _sectionLabel('Account'),
+                const SizedBox(height: 10),
+
+                _settingsTile(
+                  icon: Icons.info_outline_rounded,
+                  iconColor: AppColors.textSecondary,
+                  title: 'App version',
+                  subtitle: '1.0.0',
                 ),
                 const SizedBox(height: 8),
-
-                Container(
-                  decoration: BoxDecoration(
-                    color: AppColors.surface,
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Column(
-                    children: [
-                      _SettingsTile(
-                        icon: Icons.person_outline,
-                        title: 'Profile UID',
-                        subtitle: auth.user?.uid ?? '',
-                      ),
-                      const Divider(height: 1),
-                      _SettingsTile(
-                        icon: Icons.calendar_today_outlined,
-                        title: 'Member Since',
-                        subtitle: profile != null
-                            ? '${profile.createdAt.day}/${profile.createdAt.month}/${profile.createdAt.year}'
-                            : '—',
-                      ),
-                    ],
-                  ),
-                ),
-
-                const SizedBox(height: 24),
-                const Text(
-                  'About',
-                  style: TextStyle(
-                    color: AppColors.textSecondary,
-                    fontSize: 13,
-                    fontWeight: FontWeight.w600,
-                    letterSpacing: 0.8,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Container(
-                  decoration: BoxDecoration(
-                    color: AppColors.surface,
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: const Column(
-                    children: [
-                      _SettingsTile(
-                        icon: Icons.info_outline,
-                        title: 'Version',
-                        subtitle: '1.0.0',
-                      ),
-                      Divider(height: 1),
-                      _SettingsTile(
-                        icon: Icons.location_city_outlined,
-                        title: 'App',
-                        subtitle: 'Kigali City Services Directory',
-                      ),
-                    ],
-                  ),
-                ),
-
-                const SizedBox(height: 32),
-                SizedBox(
-                  width: double.infinity,
-                  child: OutlinedButton.icon(
-                    onPressed: () async {
-                      final confirmed = await showDialog<bool>(
-                        context: context,
-                        builder: (ctx) => AlertDialog(
-                          backgroundColor: AppColors.surface,
-                          title: const Text('Sign Out', style: TextStyle(color: AppColors.textPrimary)),
-                          content: const Text(
-                            'Are you sure you want to sign out?',
-                            style: TextStyle(color: AppColors.textSecondary),
-                          ),
-                          actions: [
-                            TextButton(
-                              onPressed: () => Navigator.pop(ctx, false),
-                              child: const Text('Cancel'),
-                            ),
-                            ElevatedButton(
-                              onPressed: () => Navigator.pop(ctx, true),
-                              child: const Text('Sign Out'),
-                            ),
-                          ],
-                        ),
-                      );
-                      if (confirmed == true && context.mounted) {
-                        await context.read<ap.AuthProvider>().signOut();
-                      }
-                    },
-                    icon: const Icon(Icons.logout, color: AppColors.error),
-                    label: const Text('Sign Out', style: TextStyle(color: AppColors.error)),
-                    style: OutlinedButton.styleFrom(
-                      side: const BorderSide(color: AppColors.error),
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                    ),
-                  ),
+                _settingsTile(
+                  icon: Icons.logout_rounded,
+                  iconColor: AppColors.error,
+                  title: 'Sign out',
+                  subtitle: 'You can always sign back in',
+                  onTap: () => auth.signOut(),
+                  titleColor: AppColors.error,
                 ),
               ],
-            ),
-          );
-        },
+            );
+          },
+        ),
       ),
     );
   }
-}
 
-class _SettingsTile extends StatelessWidget {
-  final IconData icon;
-  final String title;
-  final String subtitle;
-
-  const _SettingsTile({
-    required this.icon,
-    required this.title,
-    required this.subtitle,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return ListTile(
-      leading: Container(
-        width: 38,
-        height: 38,
-        decoration: BoxDecoration(
-          color: AppColors.surfaceLight,
-          borderRadius: BorderRadius.circular(8),
+  Widget _sectionLabel(String text) => Text(
+        text.toUpperCase(),
+        style: const TextStyle(
+          color: AppColors.textMuted,
+          fontSize: 11,
+          fontWeight: FontWeight.w700,
+          letterSpacing: 1.2,
         ),
-        child: Icon(icon, color: AppColors.primary, size: 20),
-      ),
-      title: Text(title, style: const TextStyle(color: AppColors.textPrimary, fontSize: 14)),
-      subtitle: Text(
-        subtitle,
-        style: const TextStyle(color: AppColors.textMuted, fontSize: 12),
-        maxLines: 1,
-        overflow: TextOverflow.ellipsis,
+      );
+
+  Widget _settingsTile({
+    required IconData icon,
+    required Color iconColor,
+    required String title,
+    String? subtitle,
+    Widget? trailing,
+    VoidCallback? onTap,
+    Color? titleColor,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
+        decoration: BoxDecoration(
+          color: AppColors.surface,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: AppColors.surfaceBorder),
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 36,
+              height: 36,
+              decoration: BoxDecoration(
+                color: iconColor.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Icon(icon, color: iconColor, size: 18),
+            ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: TextStyle(
+                      color: titleColor ?? AppColors.textPrimary,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  if (subtitle != null) ...[
+                    const SizedBox(height: 2),
+                    Text(
+                      subtitle,
+                      style: const TextStyle(
+                          color: AppColors.textSecondary, fontSize: 12),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+            if (trailing != null)
+              trailing
+            else if (onTap != null)
+              const Icon(Icons.arrow_forward_ios_rounded,
+                  color: AppColors.textMuted, size: 14),
+          ],
+        ),
       ),
     );
   }
