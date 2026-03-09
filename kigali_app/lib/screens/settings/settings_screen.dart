@@ -129,6 +129,12 @@ class SettingsScreen extends StatelessWidget {
                 ),
 
                 const SizedBox(height: 24),
+                const Center(
+                  child: Text(
+                    'Kigali App v1.0.0',
+                    style: TextStyle(color: AppColors.textSecondary, fontSize: 13),
+                  ),
+                ),
 
                 // ── Account ───────────────────────────────────────────
                 _sectionLabel('Account'),
