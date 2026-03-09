@@ -84,6 +84,8 @@ class ListingProvider extends ChangeNotifier {
   }
 
   /// Call this on sign-out to wipe all state so the next user starts clean.
+  /// This is important to prevent data from one user briefly flashing for another user.
+  /// The listing provider is the only provider that holds user-specific data, so this is the only one that needs to be reset on sign-out.
   void reset() {
     _allListingsSubscription?.cancel();
     _userListingsSubscription?.cancel();
