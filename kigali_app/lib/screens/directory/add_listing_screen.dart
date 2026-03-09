@@ -151,7 +151,8 @@ class _AddListingScreenState extends State<AddListingScreen> {
                     keyboardType: TextInputType.phone),
                 const SizedBox(height: 16),
                 _field(_descCtrl, 'Description', Icons.description_outlined,
-                    maxLines: 4,
+                    maxLines: 3,
+                    maxLength: 500,
                     validator: (v) => (v?.isEmpty ?? true) ? 'Description is required' : null),
                 const SizedBox(height: 16),
                 const Text(
