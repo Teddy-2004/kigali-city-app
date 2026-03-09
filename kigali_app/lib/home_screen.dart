@@ -25,15 +25,18 @@ class _HomeScreenState extends State<HomeScreen> {
     SettingsScreen(),
   ];
 
-  @override
+ @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      final uid = context.read<ap.AuthProvider>().user?.uid;
+      final auth = context.read<ap.AuthProvider>();
       final provider = context.read<ListingProvider>();
+      
       provider.startListening();
-      if (uid != null) {
-        provider.startListeningUserListings(uid);
+      
+      // Only start user listings if UID is available
+      if (auth.user?.uid != null) {
+        provider.startListeningUserListings(auth.user!.uid);
       }
     });
   }

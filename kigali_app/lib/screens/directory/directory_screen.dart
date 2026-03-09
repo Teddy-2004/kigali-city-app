@@ -194,7 +194,7 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
           padding: const EdgeInsets.fromLTRB(20, 14, 20, 6),
           child: Row(
             children: [
-              const Text('Places',
+              const Text('Near you',
                   style: TextStyle(
                       color: AppColors.textPrimary,
                       fontSize: 15,

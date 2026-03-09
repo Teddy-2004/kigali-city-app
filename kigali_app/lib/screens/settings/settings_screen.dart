@@ -119,7 +119,9 @@ class SettingsScreen extends StatelessWidget {
                   subtitle: 'Alerts for new places nearby',
                   trailing: Switch(
                     value: profile?.notificationsEnabled ?? false,
-                    onChanged: (_) {},
+                    onChanged: (value) {
+                      context.read<ap.AuthProvider>().updateNotifications(value);
+                    },
                     activeColor: AppColors.primary,
                     inactiveTrackColor: AppColors.surfaceBorder,
                     inactiveThumbColor: AppColors.textMuted,

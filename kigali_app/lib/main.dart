@@ -17,20 +17,39 @@ void main() async {
   runApp(const KigaliApp());
 }
 
-class KigaliApp extends StatelessWidget {
+// StatefulWidget so providers are created ONCE in initState
+// and never recreated when the widget rebuilds
+class KigaliApp extends StatefulWidget {
   const KigaliApp({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    // Create both providers manually so we can cross-wire them
-    final listingProvider = ListingProvider();
-    final authProvider = ap.AuthProvider()
-      ..setListingProvider(listingProvider);
+  State<KigaliApp> createState() => _KigaliAppState();
+}
 
+class _KigaliAppState extends State<KigaliApp> {
+  late final ListingProvider _listingProvider;
+  late final ap.AuthProvider _authProvider;
+
+  @override
+  void initState() {
+    super.initState();
+    _listingProvider = ListingProvider();
+    _authProvider = ap.AuthProvider()..setListingProvider(_listingProvider);
+  }
+
+  @override
+  void dispose() {
+    _listingProvider.dispose();
+    _authProvider.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
-        ChangeNotifierProvider<ap.AuthProvider>.value(value: authProvider),
-        ChangeNotifierProvider<ListingProvider>.value(value: listingProvider),
+        ChangeNotifierProvider<ap.AuthProvider>.value(value: _authProvider),
+        ChangeNotifierProvider<ListingProvider>.value(value: _listingProvider),
       ],
       child: MaterialApp(
         title: 'Kigali City Directory',

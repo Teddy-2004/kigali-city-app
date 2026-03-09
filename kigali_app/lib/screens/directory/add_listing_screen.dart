@@ -78,6 +78,10 @@ class _AddListingScreenState extends State<AddListingScreen> {
     setState(() => _isSaving = false);
 
     if (success && mounted) {
+      final uid = context.read<ap.AuthProvider>().user?.uid;
+      if (uid != null) {
+        context.read<ListingProvider>().startListeningUserListings(uid);
+      }
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(isEditing ? 'Listing updated!' : 'Listing created!')),
       );
