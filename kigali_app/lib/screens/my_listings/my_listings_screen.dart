@@ -57,6 +57,7 @@ class _MyListingsScreenState extends State<MyListingsScreen> {
           SnackBar(
             content: Text(success ? 'Listing deleted' : 'Failed to delete'),
             backgroundColor: success ? null : AppColors.error,
+            duration: Duration(seconds: 2),
           ),
         );
       }
