@@ -143,6 +143,8 @@ class AuthProvider extends ChangeNotifier {
   }
 
   /// Polled every 3 seconds from VerifyEmailScreen.
+  /// user.reload() is required to get the latest emailVerified status from Firebase.
+  /// state event when email is verified, so we have to poll for it.
   Future<void> checkEmailVerification() async {
     try {
       await _authService.reloadUser();
